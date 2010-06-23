@@ -3,4 +3,6 @@
     %title Spatial Address Book
 
   %body
+    - if session[:authentication]
+      = session[:authentication][:token]
     = yield

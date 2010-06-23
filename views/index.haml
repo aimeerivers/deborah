@@ -2,4 +2,10 @@
 
 %p Please authenticate in order to view your contacts ...
 
-%iframe{:src => "http://spatial-address-book.rpxnow.com/openid/embed?token_url=http%3A%2F%2Flocalhost%3A4567%2Flogin", :scrolling => "no", :frameBorder => "no", :allowtransparency => "true", :style => "width:400px;height:240px"}
+%form{:method => 'post', :action => @target}
+
+  - @oauth.each do |key, value|
+    %input{:type => 'hidden', :name => key, :value => value}
+
+  %input{:type => 'hidden', :name => 'oauth_signature', :value => @signature}
+  %input{:type => 'submit', :value => 'Authenticate'}
