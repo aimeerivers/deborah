@@ -17,12 +17,13 @@ get '/' do
 end
 
 get '/contacts' do
-  @contacts = RestClient.get('http://www-opensocial.googleusercontent.com/api/people/@me/@all', :token => session[:authentication][:token])
+  @contacts = RestClient.get('https://www.google.com/m8/feeds/contacts/default/full/', :token => session[:authentication][:token])
   haml :contacts
 end
 
 get '/login' do
   oauth_token, oauth_token_secret = get_request_token
+  session[:token_secret] = oauth_token_secret
   authorize_token(oauth_token)
 end
 
@@ -32,10 +33,11 @@ get '/continue' do
     'oauth_consumer_key' => 'anonymous',
     'oauth_token' => params['oauth_token'],
     'oauth_verifier' => params['oauth_verifier'],
+    'oauth_signature_method' => 'HMAC-SHA1',
     'oauth_timestamp' => Time.now.to_i.to_s,
     'oauth_nonce' => generate_nonce
   }
-  @signature = generate_signature('POST', @target, @oauth)
+  @signature = generate_signature('POST', @target, @oauth, 'anonymous', session[:token_secret])
   haml :index
 end
 
@@ -58,13 +60,20 @@ def authenticate(token)
 end
 
 def generate_nonce
-  Array.new(5) { rand(256) }.pack('C*').unpack('H*').first
+  Array.new(10) { rand(256) }.pack('C*').unpack('H*').first
 end
 
-def generate_signature(method, target, oauth)
+def generate_signature(method, target, oauth, consumer_secret, token_secret='')
+  key = percent_encode(consumer_secret) + '&' + percent_encode(token_secret)
+  puts 'Key:'
+  puts key
   string = base_string(method, target, oauth)
+  puts 'Base string:'
   puts string
-  Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), 'anonymous&', string)).chomp.gsub(/\n/,'') 
+  puts 'Signature:'
+  signature = Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), key, string)).chomp.gsub(/\n/,'') 
+  puts signature
+  signature
 end
 
 def base_string(method, target, oauth)
@@ -87,10 +96,10 @@ def get_request_token
     'oauth_nonce' => generate_nonce,
     'oauth_signature_method' => 'HMAC-SHA1',
     'oauth_timestamp' => Time.now.to_i.to_s,
-    'scope' => 'http://www-opensocial.googleusercontent.com/api/people',
+    'scope' => 'https://www.google.com/m8/feeds/',
     'oauth_callback' => 'http://localhost:4567/continue'
   }
-  signature = generate_signature('POST', target, oauth)
+  signature = generate_signature('POST', target, oauth, 'anonymous')
   result = CGI.parse(RestClient.post(target, oauth.merge('oauth_signature' => signature)))
   [result['oauth_token'].first, result['oauth_token_secret'].first]
 end
