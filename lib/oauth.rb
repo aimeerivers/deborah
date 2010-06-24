@@ -1,3 +1,7 @@
+require 'rest_client'
+require 'base64'
+require 'openssl'
+
 class Oauth
 
   def self.get_request_token
@@ -10,8 +14,7 @@ class Oauth
       'scope' => 'https://www.google.com/m8/feeds/',
       'oauth_callback' => 'http://localhost:4567/continue'
     }
-    signature = generate_signature('POST', target, oauth, 'anonymous')
-    result = CGI.parse(RestClient.post(target, oauth.merge('oauth_signature' => signature)))
+    result = make_request(target, oauth, 'anonymous')
     [result['oauth_token'].first, result['oauth_token_secret'].first]
   end
 
@@ -25,8 +28,7 @@ class Oauth
       'oauth_timestamp' => Time.now.to_i.to_s,
       'oauth_nonce' => generate_nonce
     }
-    signature = generate_signature('POST', target, oauth, 'anonymous', token_secret)
-    result = CGI.parse(RestClient.post(target, oauth.merge('oauth_signature' => signature)))
+    result = make_request(target, oauth, 'anonymous', token_secret)
     [result['oauth_token'].first, result['oauth_token_secret'].first]
   end
 
@@ -36,10 +38,14 @@ class Oauth
     Array.new(10) { rand(256) }.pack('C*').unpack('H*').first
   end
 
+  def self.make_request(target, oauth, consumer_secret, token_secret='')
+    signature = generate_signature('POST', target, oauth, consumer_secret, token_secret)
+    CGI.parse(RestClient.post(target, oauth.merge('oauth_signature' => signature)))
+  end
+
   def self.generate_signature(method, target, oauth, consumer_secret, token_secret='')
     key = percent_encode(consumer_secret) + '&' + percent_encode(token_secret)
-    string = base_string(method, target, oauth)
-    Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), key, string)).chomp.gsub(/\n/,'')
+    Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), key, base_string(method, target, oauth))).chomp.gsub(/\n/,'')
   end
 
   def self.base_string(method, target, oauth)

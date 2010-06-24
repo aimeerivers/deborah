@@ -1,10 +1,6 @@
 require 'rubygems'
 require 'sinatra'
-require 'json'
-require 'rest_client'
 require 'haml'
-require 'base64'
-require 'openssl'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
 require 'oauth.rb'
