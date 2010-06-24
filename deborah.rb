@@ -49,15 +49,8 @@ end
 
 def generate_signature(method, target, oauth, consumer_secret, token_secret='')
   key = percent_encode(consumer_secret) + '&' + percent_encode(token_secret)
-  puts 'Key:'
-  puts key
   string = base_string(method, target, oauth)
-  puts 'Base string:'
-  puts string
-  puts 'Signature:'
-  signature = Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), key, string)).chomp.gsub(/\n/,'') 
-  puts signature
-  signature
+  Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'), key, string)).chomp.gsub(/\n/,'')
 end
 
 def base_string(method, target, oauth)
