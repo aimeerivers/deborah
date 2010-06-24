@@ -38,6 +38,10 @@ get '/logout' do
   redirect '/'
 end
 
-def authenticated?
-  !session[:authentication].nil?
+module ControllerHelper
+  def authenticated?
+    !session[:authentication].nil?
+  end
 end
+
+helpers ControllerHelper
