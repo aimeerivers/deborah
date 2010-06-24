@@ -1,11 +1,5 @@
 %h1 Spatial Address Book
 
-%p Please authenticate in order to view your contacts ...
-
-%form{:method => 'post', :action => @target}
-
-  - @oauth.each do |key, value|
-    %input{:type => 'hidden', :name => key, :value => value}
-
-  %input{:type => 'hidden', :name => 'oauth_signature', :value => @signature}
-  %input{:type => 'submit', :value => 'Authenticate'}
+%p
+  Please
+  %a{:href => '/login'} login with Google

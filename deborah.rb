@@ -12,12 +12,12 @@ get '/' do
   if authenticated?
     redirect '/contacts'
   else
-    redirect '/login'
+    haml :index
   end
 end
 
 get '/contacts' do
-  @contacts = RestClient.get('https://www.google.com/m8/feeds/contacts/default/full/', :token => session[:authentication][:token])
+  #@contacts = RestClient.get('https://www.google.com/m8/feeds/contacts/default/full/', :token => session[:authentication][:token])
   haml :contacts
 end
 
@@ -28,17 +28,10 @@ get '/login' do
 end
 
 get '/continue' do
-  @target = 'https://www.google.com/accounts/OAuthGetAccessToken'
-  @oauth = {
-    'oauth_consumer_key' => 'anonymous',
-    'oauth_token' => params['oauth_token'],
-    'oauth_verifier' => params['oauth_verifier'],
-    'oauth_signature_method' => 'HMAC-SHA1',
-    'oauth_timestamp' => Time.now.to_i.to_s,
-    'oauth_nonce' => generate_nonce
-  }
-  @signature = generate_signature('POST', @target, @oauth, 'anonymous', session[:token_secret])
-  haml :index
+  oauth_token, oauth_token_secret = get_access_token(params['oauth_token'], params['oauth_verifier'], session[:token_secret])
+  session[:token_secret] = oauth_token_secret
+  session[:authentication] = {:token => oauth_token, :token_secret => oauth_token_secret}
+  redirect '/contacts'
 end
 
 get '/logout' do
@@ -48,15 +41,6 @@ end
 
 def authenticated?
   !session[:authentication].nil?
-end
-
-def authenticate(token)
-  response = JSON.parse(RestClient.post('https://rpxnow.com/api/v2/auth_info', :token => token, 'apiKey' => '2b28c508f47047b3fe69197e8cfedbd38606f5b0', :format => 'json', :extended => 'true'))
-  if response['stat'] == 'ok'
-    session[:authentication] = response.merge(:token => token)
-    return true
-  end
-  return false
 end
 
 def generate_nonce
@@ -108,7 +92,17 @@ def authorize_token(token)
   redirect 'https://www.google.com/accounts/OAuthAuthorizeToken?oauth_token=' + token
 end
 
-def get_access_token(token, verifier)
+def get_access_token(token, verifier, token_secret)
+  target = 'https://www.google.com/accounts/OAuthGetAccessToken'
+  oauth = {
+    'oauth_consumer_key' => 'anonymous',
+    'oauth_token' => token,
+    'oauth_verifier' => verifier,
+    'oauth_signature_method' => 'HMAC-SHA1',
+    'oauth_timestamp' => Time.now.to_i.to_s,
+    'oauth_nonce' => generate_nonce
+  }
+  signature = generate_signature('POST', target, oauth, 'anonymous', token_secret)
   result = CGI.parse(RestClient.post(target, oauth.merge('oauth_signature' => signature)))
-  raise result.inspect
+  [result['oauth_token'].first, result['oauth_token_secret'].first]
 end

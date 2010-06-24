@@ -4,5 +4,5 @@
 
   %body
     - if session[:authentication]
-      = session[:authentication][:token]
+      %a{:href => '/logout'} Logout
     = yield
