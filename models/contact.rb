@@ -6,10 +6,12 @@ class Contact
 
   attr_reader :name
   attr_reader :email
+  attr_reader :address
 
   def initialize(params={})
     @name = params['title'] if params['title'].is_a? String
     @email = parse_email(params['gd:email'])
+    @address = parse_address(params['gd:postalAddress'])
   end
 
   def title
@@ -30,10 +32,15 @@ class Contact
 
   def parse_email(email)
     return nil if email.nil?
-    if email.is_a?(Array)
+    if email.is_a? Array
       email = email.select{|e| e.has_key?('primary')}.first
     end
     email['address']
+  end
+
+  def parse_address(address)
+    return nil unless address.is_a? String
+    address.split("\n").map{|line| line.strip}.join(', ')
   end
 
 end

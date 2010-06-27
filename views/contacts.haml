@@ -1,4 +1,8 @@
 %h2 Your contacts
 
 - @contacts.each do |contact|
-  %p= contact.title
+  %p
+    = contact.title
+    - unless contact.address.nil?
+      %br/
+      = contact.address

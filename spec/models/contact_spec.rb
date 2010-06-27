@@ -34,6 +34,25 @@ describe Contact do
         contact.email.should == primary_email
       end
     end
+
+    context 'address' do
+      it 'populates the address if there is one' do
+        address = 'ADDRESS'
+        contact = Contact.new('gd:postalAddress' => address)
+        contact.address.should == address
+      end
+
+      it 'turns newlines into commas' do
+        address = "Line 1 \nLine 2\nPostcode"
+        contact = Contact.new('gd:postalAddress' => address)
+        contact.address.should == "Line 1, Line 2, Postcode"
+      end
+
+      it 'does not populate the address if one does not exist' do
+        contact = Contact.new()
+        contact.address.should be_nil
+      end
+    end
   end
 
   describe 'contact title' do
