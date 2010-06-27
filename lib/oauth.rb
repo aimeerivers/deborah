@@ -4,7 +4,7 @@ require 'openssl'
 
 class Oauth
 
-  def self.get_request_token
+  def self.get_request_token(host, port)
     target = 'https://www.google.com/accounts/OAuthGetRequestToken'
     oauth = {
       'oauth_consumer_key' => 'anonymous',
@@ -12,7 +12,7 @@ class Oauth
       'oauth_signature_method' => 'HMAC-SHA1',
       'oauth_timestamp' => Time.now.to_i.to_s,
       'scope' => 'https://www.google.com/m8/feeds/',
-      'oauth_callback' => 'http://localhost:4567/continue'
+      'oauth_callback' => "http://#{host}:#{port}/continue"
     }
     result = make_request(target, oauth, 'anonymous')
     [result['oauth_token'].first, result['oauth_token_secret'].first]

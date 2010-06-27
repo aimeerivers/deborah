@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra'
+require 'sinatra/reloader' if development?
 require 'haml'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
@@ -21,9 +22,9 @@ get '/contacts' do
 end
 
 get '/login' do
-  oauth_token, oauth_token_secret = Oauth.get_request_token
+  oauth_token, oauth_token_secret = Oauth.get_request_token(request.host, request.port)
   session[:token_secret] = oauth_token_secret
-  redirect 'https://www.google.com/accounts/OAuthAuthorizeToken?oauth_token=' + oauth_token
+  redirect "https://www.google.com/accounts/OAuthAuthorizeToken?oauth_token=#{oauth_token}"
 end
 
 get '/continue' do
