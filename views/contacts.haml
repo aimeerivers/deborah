@@ -1,8 +1,8 @@
 %h2 Your contacts
 
-- @contacts.each do |contact|
+- @contacts.sort{|a,b| a.title.upcase <=> b.title.upcase}.each do |contact|
   %p
     = contact.title
-    - unless contact.address.nil?
-      %br/
-      = contact.address
+    %ul.addresses
+    - contact.addresses.each do |address|
+      %li= address

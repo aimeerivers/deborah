@@ -35,22 +35,29 @@ describe Contact do
       end
     end
 
-    context 'address' do
-      it 'populates the address if there is one' do
+    context 'addresses' do
+      it 'populates the addresses if there are any' do
         address = 'ADDRESS'
         contact = Contact.new('gd:postalAddress' => address)
-        contact.address.should == address
+        contact.addresses.should == [address]
       end
 
       it 'turns newlines into commas' do
-        address = "Line 1 \nLine 2\nPostcode"
-        contact = Contact.new('gd:postalAddress' => address)
-        contact.address.should == "Line 1, Line 2, Postcode"
+        addresses = "Line 1 \nLine 2\nPostcode"
+        contact = Contact.new('gd:postalAddress' => addresses)
+        contact.addresses.should == ["Line 1, Line 2, Postcode"]
       end
 
-      it 'does not populate the address if one does not exist' do
+      it 'does not populate the addresses if none are given' do
         contact = Contact.new()
-        contact.address.should be_nil
+        contact.addresses.should == []
+      end
+
+      it 'deals with multiple addresses' do
+        address1 = 'ADDRESS1'
+        address2 = 'ADDRESS2'
+        contact = Contact.new('gd:postalAddress' => [address1, address2])
+        contact.addresses.should == ['ADDRESS1', 'ADDRESS2']
       end
     end
   end
@@ -78,6 +85,12 @@ describe Contact do
 
     it 'makes the request to Google Contacts' do
       Connector.should_receive(:get_request).with('https://www.google.com/m8/feeds/contacts/default/thin', anything, anything)
+      Contact.all({})
+    end
+
+    it 'asks for a high number of contacts to avoid pagination' do
+      params = hash_including('max-results' => 1000)
+      Connector.should_receive(:get_request).with(anything, params, anything)
       Contact.all({})
     end
 

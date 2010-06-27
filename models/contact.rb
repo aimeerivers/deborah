@@ -6,12 +6,12 @@ class Contact
 
   attr_reader :name
   attr_reader :email
-  attr_reader :address
+  attr_reader :addresses
 
   def initialize(params={})
     @name = params['title'] if params['title'].is_a? String
     @email = parse_email(params['gd:email'])
-    @address = parse_address(params['gd:postalAddress'])
+    @addresses = parse_addresses(params['gd:postalAddress'])
   end
 
   def title
@@ -22,7 +22,8 @@ class Contact
   def self.all(authentication)
     target = 'https://www.google.com/m8/feeds/contacts/default/thin'
     params = {
-      'oauth_token' => authentication[:token]
+      'oauth_token' => authentication[:token],
+      'max-results' => 1000
     }
     result = Crack::XML.parse(Connector::get_request(target, params, authentication[:token_secret]))
     result['feed']['entry'].map {|entry| Contact.new(entry)}
@@ -38,9 +39,10 @@ class Contact
     email['address']
   end
 
-  def parse_address(address)
-    return nil unless address.is_a? String
-    address.split("\n").map{|line| line.strip}.join(', ')
+  def parse_addresses(addresses)
+    return [] if addresses.nil?
+    addresses = [addresses] if addresses.is_a? String
+    addresses.map{|a| a.split("\n").map{|line| line.strip}.join(', ')}
   end
 
 end
