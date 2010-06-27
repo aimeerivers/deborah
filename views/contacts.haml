@@ -1,3 +1,4 @@
 %h2 Your contacts
 
-= @contacts.inspect
+- @contacts.each do |contact|
+  %p= contact.title

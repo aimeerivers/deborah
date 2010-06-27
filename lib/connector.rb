@@ -14,7 +14,7 @@ module Connector
     merge_params!(params)
     signature = generate_signature('GET', target, params, 'anonymous', token_secret)
     target = "#{target}?#{query_string(params)}&oauth_signature=#{signature}"
-    result = CGI.parse(RestClient.get(target, :content_type => 'application/atom+xml'))
+    RestClient.get(target, :content_type => 'application/atom+xml')
   end
 
   def self.merge_params!(params)
