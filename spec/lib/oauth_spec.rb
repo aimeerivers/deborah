@@ -3,16 +3,16 @@ require File.dirname(__FILE__) + '/../spec_helper'
 describe Oauth do
   describe 'getting request token from Google' do
     before do
-      Connector.stub!(:make_request => {'oauth_token' => ['TOKEN'], 'oauth_token_secret' => ['SECRET']})
+      Connector.stub!(:post_request => {'oauth_token' => ['TOKEN'], 'oauth_token_secret' => ['SECRET']})
     end
 
     it 'makes a request to OAuthGetRequestToken' do
-      Connector.should_receive(:make_request).with('https://www.google.com/accounts/OAuthGetRequestToken', anything, anything)
+      Connector.should_receive(:post_request).with('https://www.google.com/accounts/OAuthGetRequestToken', anything)
       Oauth.get_request_token('example.org', 80)
     end
 
     it 'includes a callback URL' do
-      Connector.should_receive(:make_request).with(anything, hash_including('oauth_callback' => 'http://myhost.com:5839/continue'), anything)
+      Connector.should_receive(:post_request).with(anything, hash_including('oauth_callback' => 'http://myhost.com:5839/continue'))
       Oauth.get_request_token('myhost.com', 5839)
     end
 
@@ -23,11 +23,11 @@ describe Oauth do
 
   describe 'getting access token from Google' do
     before do
-      Connector.stub!(:make_request => {'oauth_token' => ['TOKEN'], 'oauth_token_secret' => ['SECRET']})
+      Connector.stub!(:post_request => {'oauth_token' => ['TOKEN'], 'oauth_token_secret' => ['SECRET']})
     end
 
     it 'makes a request to OAuthGetAccessToken' do
-      Connector.should_receive(:make_request).with('https://www.google.com/accounts/OAuthGetAccessToken', anything, anything, anything)
+      Connector.should_receive(:post_request).with('https://www.google.com/accounts/OAuthGetAccessToken', anything, anything)
       Oauth.get_access_token(mock, mock, mock)
     end
 
@@ -37,13 +37,13 @@ describe Oauth do
         'oauth_token' => token,
         'oauth_verifier' => verifier
       })
-      Connector.should_receive(:make_request).with(anything, oauth, anything, anything)
+      Connector.should_receive(:post_request).with(anything, oauth, anything)
       Oauth.get_access_token(token, verifier, mock)
     end
 
     it 'signs the request with the secret token' do
       secret = mock(:secret)
-      Connector.should_receive(:make_request).with(anything, anything, anything, secret)
+      Connector.should_receive(:post_request).with(anything, anything, secret)
       Oauth.get_access_token(mock, mock, secret)
     end
 

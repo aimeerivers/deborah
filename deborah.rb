@@ -4,7 +4,9 @@ require 'sinatra/reloader' if development?
 require 'haml'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
+$LOAD_PATH.unshift(File.dirname(__FILE__) + '/models')
 require 'oauth.rb'
+require 'contact.rb'
 
 enable :sessions
 
@@ -17,7 +19,7 @@ get '/' do
 end
 
 get '/contacts' do
-  #@contacts = RestClient.get('https://www.google.com/m8/feeds/contacts/default/full/', :token => session[:authentication][:token])
+  @contacts = Contact.all(session[:authentication])
   haml :contacts
 end
 
