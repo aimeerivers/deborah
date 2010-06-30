@@ -37,15 +37,11 @@ describe Contact do
 
     context 'addresses' do
       it 'populates the addresses if there are any' do
-        address = 'ADDRESS'
-        contact = Contact.new('gd:postalAddress' => address)
+        address_string = 'ADDRESS'
+        address = mock(:address)
+        Address.should_receive(:new).with(address_string).and_return(address)
+        contact = Contact.new('gd:postalAddress' => address_string)
         contact.addresses.should == [address]
-      end
-
-      it 'turns newlines into commas' do
-        addresses = "Line 1 \nLine 2\nPostcode"
-        contact = Contact.new('gd:postalAddress' => addresses)
-        contact.addresses.should == ["Line 1, Line 2, Postcode"]
       end
 
       it 'does not populate the addresses if none are given' do
@@ -54,10 +50,14 @@ describe Contact do
       end
 
       it 'deals with multiple addresses' do
-        address1 = 'ADDRESS1'
-        address2 = 'ADDRESS2'
-        contact = Contact.new('gd:postalAddress' => [address1, address2])
-        contact.addresses.should == ['ADDRESS1', 'ADDRESS2']
+        address1 = mock(:address)
+        address2 = mock(:address)
+        address_string_1 = 'ADDRESS1'
+        address_string_2 = 'ADDRESS2'
+        Address.stub!(:new).with(address_string_1).and_return(address1)
+        Address.stub!(:new).with(address_string_2).and_return(address2)
+        contact = Contact.new('gd:postalAddress' => [address_string_1, address_string_2])
+        contact.addresses.should == [address1, address2]
       end
     end
   end

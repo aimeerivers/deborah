@@ -5,8 +5,9 @@ require 'haml'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/models')
-require 'oauth.rb'
-require 'contact.rb'
+require 'oauth'
+require 'contact'
+require 'address'
 
 enable :sessions
 

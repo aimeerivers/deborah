@@ -11,7 +11,7 @@ class Contact
   def initialize(params={})
     @name = params['title'] if params['title'].is_a? String
     @email = parse_email(params['gd:email'])
-    @addresses = parse_addresses(params['gd:postalAddress'])
+    @addresses = build_addresses(params['gd:postalAddress'])
   end
 
   def title
@@ -39,10 +39,10 @@ class Contact
     email['address']
   end
 
-  def parse_addresses(addresses)
+  def build_addresses(addresses)
     return [] if addresses.nil?
     addresses = [addresses] if addresses.is_a? String
-    addresses.map{|a| a.split("\n").map{|line| line.strip}.join(', ')}
+    addresses.map{|a| Address.new(a)}
   end
 
 end
