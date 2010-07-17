@@ -2,6 +2,7 @@ require 'rubygems'
 require 'sinatra'
 require 'sinatra/reloader' if development?
 require 'haml'
+require 'geokit'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/models')
