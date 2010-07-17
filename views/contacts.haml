@@ -1,8 +1,13 @@
 %h2 Your contacts
 
-- @contacts.sort{|a,b| a.title.upcase <=> b.title.upcase}.each do |contact|
-  %p
-    = contact.title
-    %ul.addresses
-    - contact.addresses.each do |address|
-      %li= "#{address.to_s} : #{address.latitude}, #{address.longitude}"
+#map_canvas{:style => "width: 900px; height: 500px;"}
+
+:javascript
+  var myOptions = {
+    zoom: 2,
+    center: new google.maps.LatLng(10,0),
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+  var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+
+  #{address_markers(@addresses)}

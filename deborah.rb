@@ -21,7 +21,10 @@ get '/' do
 end
 
 get '/contacts' do
-  @contacts = Contact.all(session[:authentication])
+  @addresses = {}
+  Contact.all(session[:authentication]).each do |c|
+    @addresses[c.title] = c.addresses unless c.addresses.empty?
+  end
   haml :contacts
 end
 
@@ -49,4 +52,24 @@ module ControllerHelper
   end
 end
 
-helpers ControllerHelper
+module ViewHelper
+  def address_markers(addresses)
+    output = "var infoWindow = new google.maps.InfoWindow();\n\n"
+    index = 0
+    addresses.each do |contact|
+      addresses = contact[1]
+      addresses.each do |address|
+        lat = address.latitude
+        lng = address.longitude
+        unless lat.nil? || lng.nil?
+          index += 1
+          output << "var marker#{index} = new google.maps.Marker({position: new google.maps.LatLng(#{lat}, #{lng}), map: map, title: \"#{contact[0]}\"});\n"
+          output << "google.maps.event.addListener(marker#{index}, 'click', function() { infoWindow.setContent(\"<strong>#{contact[0]}</strong><br />#{address.to_s}\"); infoWindow.open(map, marker#{index}); });\n\n"
+        end
+      end
+    end
+    output
+  end
+end
+
+helpers ControllerHelper, ViewHelper
